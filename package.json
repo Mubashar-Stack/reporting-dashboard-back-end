@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
+    "build": "netlify-lambda build express",
     "test": "mocha **/*.test.js",
     "test-watch": "nodemon --exec 'npm test'",
     "start": "node server.js"
@@ -32,7 +33,9 @@
   },
   "devDependencies": {
     "mocha": "^5.2.0",
-    "supertest": "^3.3.0"
+    "supertest": "^3.3.0",
+    "netlify-lambda": "^0.4.0",
+    "serverless-http": "^1.6.0"
   },
   "directories": {
     "test": "test"
