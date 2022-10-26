@@ -22,7 +22,10 @@ app.use(fileUpload({
 }));
 
 // add cors headers
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
+}));
 // comporess output
 app.use(compression());
 
