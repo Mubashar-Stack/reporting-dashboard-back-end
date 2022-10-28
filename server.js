@@ -22,9 +22,7 @@ app.use(fileUpload({
 }));
 
 // add cors headers
-app.use(cors({
-  origin: ['https://reporting-dashboard-back-end.herokuapp.com/', 'https://www.google.com/']
-}));
+app.use(cors());
 // comporess output
 app.use(compression());
 
