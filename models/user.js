@@ -20,6 +20,7 @@ const User = (data) => {
   this.bank_account_holder_address = data.bank_account_holder_address;
   this.swift_bic_code = data.swift_bic_code;
   this.paypal_email_address = data.paypal_email_address;
+  this.upi:data.upi;
   this.created_at = new Date();
   this.updated_at = new Date();
 };
@@ -76,6 +77,7 @@ User.addUser = function addUser(input, result) {
     IFSC_code: input.IFSC_code,
     bank_account_holder_address: input.bank_account_holder_address,
     swift_bic_code: input.swift_bic_code,
+    upi:input.upi,
     paypal_email_address: input.paypal_email_address,
     create_at: currentDate,
     updated_at: currentDate,
@@ -131,7 +133,8 @@ User.updateUser = function updateUser(input, result) {
         data.IFSC_code = input.IFSC_code ? input.IFSC_code : response[0].IFSC_code
         data.bank_account_holder_address = input.bank_account_holder_address ? input.bank_account_holder_address : response[0].bank_account_holder_address
         data.swift_bic_code = input.swift_bic_code ? input.swift_bic_code : response[0].swift_bic_code
-        data.paypal_email_address = input.paypal_email_address ? input.paypal_email_address : response[0].paypal_email_address
+        data.paypal_email_address = input.paypal_email_address ? input.paypal_email_address : response[0].paypal_email_address,
+        data.upi = input.upi ? input.upi : response[0].upi,
         db_write.query(
           "UPDATE users SET ? WHERE id=?",
           [data, input.userId],
