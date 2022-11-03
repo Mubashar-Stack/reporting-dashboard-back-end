@@ -20,7 +20,7 @@ Report.addReport = function addReport(data, result) {
 
   
  
-  db_write.query("INSERT INTO reports (Domain_name, Ad_Requests, Ad_Impressions,Revenue,commission,create_at,updated_at) VALUES ? ", [data.map(item => [item.Domain_name, item.Ad_Requests, item.Ad_Impressions,item.Revenue,item.commission,item.create_at,item.updated_at])], function (err, res) {
+  db_write.query("INSERT INTO reports (Domain_name, Ad_Requests, Ad_Impressions,Revenue,commission,create_at,updated_at,eCPM) VALUES ? ", [data.map(item => [item.Domain_name, item.Ad_Requests, item.Ad_Impressions,item.Revenue,item.commission,item.create_at,item.updated_at,item?.eCPM])], function (err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);

@@ -581,12 +581,21 @@ function addReport(req, res) {
           throw error.message;
         })
         .on("data", (row) => {
+          
+          let eCPM_temp = 0;
+          if(row["Revenue (USD)"] ==0 || row["Ad Impressions"] ==0){
+            eCPM_temp=0
+          }else{
+            eCPM_temp = (row["Revenue (USD)"]/row["Ad Impressions"])*1000;
+          }
+         
+
           let final_row = {
             Domain_name: row["Domain name"],
             Ad_Requests: row["Ad Requests"],
             Ad_Impressions: row["Ad Impressions"],
             Revenue: row["Revenue (USD)"],
-            eCPM: row["eCPM"],
+            eCPM:eCPM_temp,
             commission: req.body.commission,
             create_at: new Date(req.body.date),
             updated_at: new Date(req.body.date),
