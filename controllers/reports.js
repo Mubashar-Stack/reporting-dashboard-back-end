@@ -284,7 +284,7 @@ async function getHomeStatsFixed(req, res) {
     });
 
     let firstDay = date.getDate() - date.getDay(); 
-    let lastDay = firstDay + 6; 
+    let lastDay = firstDay + 7; 
 
     let firstDayThisWeek = new Date(date.setDate(firstDay)).toISOString().split('T')[0];
     let lastDayThisWeek = new Date(date.setDate(lastDay)).toISOString().split('T')[0];
@@ -313,10 +313,10 @@ async function getHomeStatsFixed(req, res) {
 
     let date1 =new Date()
     let firstDay1 = date1.getDate() - date1.getDay()-7; 
-    let lastDay1 = firstDay1 + 6; 
+    let lastDay1 = firstDay1 + 7; 
 
-    let firstDayLastWeek = new Date(date1.setDate(firstDay1)).toISOString().split('T')[0];
-    let lastDayLastWeek = new Date(date1.setDate(lastDay1)).toISOString().split('T')[0];
+    let firstDayLastWeek = new Date(new Date().setDate(firstDay1)).toISOString().split('T')[0];
+    let lastDayLastWeek = new Date(new Date().setDate(lastDay1)).toISOString().split('T')[0];
     console.log('firstDayPrevWeek', firstDayLastWeek, 'lastDayThisWeek', lastDayLastWeek);
     await ModalReport.getReports({Domain_name: "", start_date: firstDayLastWeek, end_date: lastDayLastWeek}, async (err, response) => {
       console.log('err :/'. err);
