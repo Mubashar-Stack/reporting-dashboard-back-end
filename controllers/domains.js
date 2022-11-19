@@ -12,11 +12,12 @@ function getDomainById(req, res) {
   try {
     const DomainId = req.params.id;
     console.log("DomainId", DomainId);
-    ModalDomain.findById(DomainId, (err, response) => {
-      if (!err && response) {
+    ModalDomain.findOne({ _id: DomainId }, (err, data) => {
+      console.log('response', data);
+      if (!err && data) {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
       return res.status(404).send({
@@ -24,7 +25,9 @@ function getDomainById(req, res) {
         message: "No Domain found.",
       });
     });
-  } catch (e) {}
+  } catch (e) {
+    console.log('e', e);
+  }
 }
 
 /**
@@ -37,11 +40,11 @@ function getAllDomains(req, res) {
   try {
     const domainId = req.params.id;
 
-    ModalDomain.getDomains((err, response) => {
-      if (!err && response) {
+    ModalDomain.find(function (err, data) {
+      if (!err && data) {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
       return res.status(401).send({
@@ -67,12 +70,14 @@ function addDomain(req, res) {
     );
     console.log("received body", req.body.domainName);
     const data = {
-      domainName: req.body.domainName,
+      domainname: req.body.domainName,
       ads_code: Math.floor(new Date() / 1000) + "_" + ads_code.name,
     };
 
-    ModalDomain.addDomain(data, (err, response) => {
-      if (!err && response) {
+    var modalDomain = new ModalDomain(data);
+
+    modalDomain.save(function (err, data) {
+      if (!err && data) {
         return res.json({
           message: "Domain Added successfully!",
           status: true,
@@ -113,7 +118,7 @@ function updateDomain(req, res) {
       }
       const data = {
         domainId,
-        domainName: req.body.domainName,
+        domainname: req.body.domainName,
       };
 
       if (req.files) {
@@ -124,8 +129,8 @@ function updateDomain(req, res) {
         data.photo = req.body.ads_code;
       }
 
-      ModalDomain.updateDomain(data, (err, response) => {
-        if (!err && response) {
+      ModalDomain.findByIdAndUpdate(domainId, data, function (err, data) {
+        if (!err && data) {
           return res.json({
             message: "Domain Updated successfully!",
             status: true,
@@ -143,16 +148,20 @@ function deleteDomain(req, res) {
   try {
     const domainId = req.params.id;
 
-    ModalDomain.deleteDomain(domainId, (err, response) => {
-      if (!err && response) {
+    ModalDomain.findByIdAndDelete(domainId, function (err, data) {
+      if (err) {
+        console.log(err);
+        return res.status(401).send(err);
+      } else {
         return res.json({
           message: "Domain Deleted successfully!",
           status: true,
+          data: data,
         });
       }
-      return res.status(401).send(err);
     });
   } catch (err) {
+    console.log('err', err);
     res.status(500).send(err.message);
   }
 }
