@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config/app.js');
+const connectDB = require('./config/db');
 const compression = require('compression');
 const routes = require('./routes');
 const errorHandler = require('express-json-errors');
@@ -23,6 +24,7 @@ app.use(fileUpload({
 
 // add cors headers
 app.use(cors());
+connectDB();
 // comporess output
 app.use(compression());
 

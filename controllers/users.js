@@ -12,17 +12,18 @@ function getUserById(req, res) {
   try {
     const userId = req.params.id;
 
-    ModalUser.findById(userId, (err, response) => {
-      if (!err && response) {
+    ModalUser.findOne({ _id: userId }, (err, data) => {
+      if (err) {
+        return res.status(401).send({
+          error: err,
+          message: "No user found.",
+        });
+      } else {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
-      return res.status(401).send({
-        error: "Not Found",
-        message: "No user found.",
-      });
     });
   } catch (e) {}
 }
@@ -37,17 +38,18 @@ function getAllUsers(req, res) {
   try {
     const userId = req.params.id;
 
-    ModalUser.getUsers((err, response) => {
-      if (!err && response) {
+    ModalUser.find(function (err, data) {
+      if (err) {
+        return res.status(401).send({
+          error: err,
+          message: "No user found.",
+        });
+      } else {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
-      return res.status(401).send({
-        error: "Not Found",
-        message: "No user found.",
-      });
     });
   } catch (e) {}
 }
@@ -71,8 +73,8 @@ function addUser(req, res) {
       //Use the mv() method to place the file in the upload directory (i.e. "uploads")
       avatar.mv(
         "./uploads/" + Math.floor(new Date() / 1000) + "_" + avatar.name
-        );
-        
+      );
+
       // if (!req.body.paypal_email_address ||
       //     !req.body.bank_account_holder_address ||
       //     !req.body.IFSC_code ||
@@ -113,15 +115,17 @@ function addUser(req, res) {
         upi: req.body.upi,
       };
 
+      var modalUser = new ModalUser(data);
 
-      ModalUser.addUser(data, (err, response) => {
-        if (!err && response) {
+      modalUser.save(function (err, data) {
+        if (err) {
+          return res.status(401).send(err);
+        } else {
           return res.json({
             message: "User Added successfully!",
             status: true,
           });
         }
-        return res.status(401).send(err);
       });
     }
   } catch (err) {
@@ -147,60 +151,64 @@ function updateUser(req, res) {
     //   }
     // } else {
 
-      let avatar
-      if (req.files) {
-        //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
-        avatar = req.files.avatar;
-        //Use the mv() method to place the file in the upload directory (i.e. "uploads")
-        avatar.mv(
-          "./uploads/" + Math.floor(new Date() / 1000) + "_" + avatar.name
-        );
-      }
-      const data = {
-        userId:userId,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        card_name: req.body.card_name,
-        card_number: req.body.card_number,
-        cvc: req.body.cvc,
-        expiry_date: new Date(req.body.expiry_date),
-        banck_name: req.body.banck_name,
-        bank_address: req.body.bank_address,
-        bank_ac_holder_name: req.body.bank_ac_holder_name,
-        account_number: req.body.account_number,
-        IFSC_code: req.body.IFSC_code,
-        bank_account_holder_address: req.body.bank_account_holder_address,
-        swift_bic_code: req.body.swift_bic_code,
-        paypal_email_address: req.body.paypal_email_address,
-        upi: req.body.upi,
-      };
+    let avatar;
+    if (req.files) {
+      //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
+      avatar = req.files.avatar;
+      //Use the mv() method to place the file in the upload directory (i.e. "uploads")
+      avatar.mv(
+        "./uploads/" + Math.floor(new Date() / 1000) + "_" + avatar.name
+      );
+    }
+    const data = {
+      userId: userId,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      email: req.body.email,
+      card_name: req.body.card_name,
+      card_number: req.body.card_number,
+      cvc: req.body.cvc,
+      expiry_date: new Date(req.body.expiry_date),
+      banck_name: req.body.banck_name,
+      bank_address: req.body.bank_address,
+      bank_ac_holder_name: req.body.bank_ac_holder_name,
+      account_number: req.body.account_number,
+      IFSC_code: req.body.IFSC_code,
+      bank_account_holder_address: req.body.bank_account_holder_address,
+      swift_bic_code: req.body.swift_bic_code,
+      paypal_email_address: req.body.paypal_email_address,
+      upi: req.body.upi,
+    };
 
-      if (req.files) {
-        data.photo = Math.floor(new Date() / 1000) + "_" + avatar?.name;
-      }
-      if (req.body.isChangedPassword == "true") {
-        data.password = Hash(req.body.password, config.appSecret).toString();
-      }
+    if (req.files) {
+      data.photo = Math.floor(new Date() / 1000) + "_" + avatar?.name;
+    }
+    if (req.body.isChangedPassword == "true") {
+      data.password = Hash(req.body.password, config.appSecret).toString();
+    }
 
-      if (req.body.isFileChange == "false") {
-        data.photo = req.body.avatar;
-      }
-      if (req.body.isChangedPassword == "false") {
-        data.password = req.body.password;
-      }
+    if (req.body.isFileChange == "false") {
+      data.photo = req.body.avatar;
+    }
+    if (req.body.isChangedPassword == "false") {
+      data.password = req.body.password;
+    }
 
-      console.log(data,'data');
+    console.log(data, "data");
 
-      ModalUser.updateUser(data, (err, response) => {
-        if (!err && response) {
-          return res.json({
-            message: "User Updated successfully!",
-            status: true,
-          });
-        }
+    ModalUser.findByIdAndUpdate(userId, data, function (err, data) {
+      if (err) {
+        console.log(err);
         return res.status(401).send(err);
-      });
+      } else {
+        return res.json({
+          message: "User Updated successfully!",
+          status: true,
+          data: data,
+        });
+      }
+    });
+
     // }
   } catch (err) {
     res.status(500).send(err.message);
@@ -208,22 +216,24 @@ function updateUser(req, res) {
 }
 
 function deleteUser(req, res) {
-    try {
-      const userId = req.params.id;
-  
-        ModalUser.deleteUser(userId, (err, response) => {
-          if (!err && response) {
-            return res.json({
-              message: "User Deleted successfully!",
-              status: true,
-            });
-          }
-          return res.status(401).send(err);
-        });
-     
-    } catch (err) {
-      res.status(500).send(err.message);
-    }
-  }
+  try {
+    const userId = req.params.id;
 
-module.exports = { getAllUsers, getUserById, addUser, updateUser,deleteUser };
+    ModalUser.findByIdAndDelete(userId, function (err, data) {
+      if (err) {
+        console.log(err);
+        return res.status(401).send(err);
+      } else {
+        return res.json({
+          message: "User Deleted successfully!",
+          status: true,
+          data: data,
+        });
+      }
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}
+
+module.exports = { getAllUsers, getUserById, addUser, updateUser, deleteUser };

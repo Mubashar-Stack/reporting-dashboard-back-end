@@ -28,14 +28,15 @@
     "joi": "^14.3.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.21",
+    "mongoose": "^6.7.2",
     "morgan": "^1.10.0",
     "mysql2": "^1.6.4"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
-    "supertest": "^3.3.0",
     "netlify-lambda": "^0.4.0",
-    "serverless-http": "^1.6.0"
+    "serverless-http": "^1.6.0",
+    "supertest": "^3.3.0"
   },
   "directories": {
     "test": "test"

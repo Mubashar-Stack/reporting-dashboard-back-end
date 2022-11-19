@@ -1,28 +1,22 @@
 require('dotenv').config();
-const mysql = require("mysql2");
+const mongoose = require('mongoose');
 
-const db_write = mysql.createConnection({
-    host     : process.env.DB_WRITE_HOST || 'localhost',
-    user     : process.env.DB_USERNAME   || 'root',
-    password : process.env.DB_PASSWORD   || '',
-    database : process.env.DB_DATABASE   || 'database',
-    port     : process.env.DB_PORT       || 3306
-});
+const connectDB = async () => {
+    try {
+      await mongoose.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?authSource=admin`, {
+        // useFindAndModify: false,
+        // useUnifiedTopology: true,
+        // useNewUrlParser: true,
+        // useCreateIndex: true,
+      });
+      console.log('MongoDB Connected!');
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  };
+  
+  module.exports = connectDB;
 
-const db_read = mysql.createConnection({
-    host     : process.env.DB_READ_HOST || 'localhost',
-    user     : process.env.DB_USERNAME  || 'root',
-    password : process.env.DB_PASSWORD  || '',
-    database : process.env.DB_DATABASE  || 'database',
-    port     : process.env.DB_PORT      || 3306
-});
 
-db_write.connect(function(err) {
-    if (err) throw err;
-});
 
-db_read.connect(function(err) {
-    if (err) throw err;
-});
-
-module.exports = {db_write, db_read};
