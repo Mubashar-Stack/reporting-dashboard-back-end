@@ -1,4 +1,5 @@
 const ModalReport = require("../models/report");
+const ModalFile = require("../models/files");
 const User =require("../models/user")
 const csv = require("fast-csv");
 const fs = require("fs");
@@ -13,11 +14,11 @@ const { db_read, db_write } = require("../config/db");
  function getAllFiles(req, res) {
   try {
 
-    ModalReport.getFiles((err, response) => {
-      if (!err && response) {
+    ModalReport.find(function (err, data) {
+      if (!err && data) {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
       return res.status(401).send({
@@ -828,7 +829,9 @@ function addReport(req, res) {
         updated_at: new Date(req.body.date),
       };
 
-      db_write.query("INSERT INTO files SET ? ", [data], function (err, res) {
+      var modalfile = new ModalFile(data);
+
+      modalfile.save(function (err, data) {
         if (err) {
           console.log("error: ", err);
         } else {
@@ -867,15 +870,19 @@ function addReport(req, res) {
           rows.push(final_row);
         })
         .on("end", () => {
-          ModalReport.addReport(rows, (err, response) => {
-            if (!err && response) {
-              return res.json({
-                message: "Report imported successfully!",
-                status: true,
-              });
-            }
-            return res.status(401).send(err);
-          });
+          // ModalReport.addReport(rows, (err, response) => {
+            ModalReport.insertMany(rows, function (err, mongooseDocuments) { 
+              if (!err && mongooseDocuments) {
+                return res.json({
+                  message: "Report imported successfully!",
+                  status: true,
+                });
+              }
+              return res.status(401).send(err);
+            
+            
+            });
+          // });
         });
     }
   } catch (err) {
@@ -888,8 +895,8 @@ function deleteFile(req, res) {
   try {
     const fileId = req.params.id;
 
-    ModalReport.deleteFile(fileId, (err, response) => {
-        if (!err && response) {
+    ModalFile.findByIdAndDelete(fileId, function (err, data) {
+        if (!err && data) {
           return res.json({
             message: "File Deleted successfully!",
             status: true,
