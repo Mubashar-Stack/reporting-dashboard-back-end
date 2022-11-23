@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema
 
 const UserSchema = new mongoose.Schema({
   first_name: {
@@ -81,6 +82,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     // required: true,
   },
+  // domains:[{
+  //   type: Schema.Types.objectId,
+  //   ref: 'domains'
+  // }],
+  domainsOfUser: [{ type: Schema.Types.ObjectId, ref: 'domains' }],
   updated_at: {
     type: Date,
     default: Date.now,

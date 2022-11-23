@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema
+
 
 const DomainSchema = new mongoose.Schema({
   domainname: {
@@ -9,6 +11,11 @@ const DomainSchema = new mongoose.Schema({
     type: String,
     // required: true,
   },
+  // Owner:{
+  //   type: Schema.Types.objectId,
+  //   ref: 'users'
+  // },
+  user: { type: Schema.Types.ObjectId, ref: 'users' },
   created_at: {
     type: Date,
     default: Date.now,

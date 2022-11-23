@@ -32,7 +32,7 @@ router.route("/users_domains_by_user_id/:user_id").get(users_domains.getUserDoma
 router.route("/users_domains").get(users_domains.getAllUserDomains);
 router.route("/user_domain/add").post(users_domains.addUserDomain);
 router.route("/user_domain/update/:id").put(users_domains.updateUserDomain);
-router.route("/user_domain/delete/:id").delete(users_domains.deleteUserDomain);
+router.route("/user_domain/delete/:user_id/:domain_id").delete(users_domains.deleteUserDomain);
 
 
 
