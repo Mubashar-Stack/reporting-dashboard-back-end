@@ -221,8 +221,10 @@ function deleteFile(req, res) {
   try {
     const fileId = req.params.id;
 
-    ModalFinalPayable.deleteFile(fileId, (err, response) => {
-      if (!err && response) {
+
+    
+    const deletedFile = ModalFinalPayable.findByIdAndDelete(fileId, function (err, data) {
+      if (!err && data) {
         return res.json({
           message: "File Deleted successfully!",
           status: true,
