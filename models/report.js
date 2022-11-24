@@ -144,7 +144,7 @@ const ReportsSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  created_at: {
+  create_at: {
     type: Date,
     default: Date.now,
   },

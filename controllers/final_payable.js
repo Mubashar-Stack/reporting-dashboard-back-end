@@ -1,5 +1,6 @@
 const ModalFinalPayable = require("../models/final_payable");
-const User =require("../models/user")
+const ModalFinalPayableFiles = require("../models/final_payable");
+const User = require("../models/user")
 const csv = require("fast-csv");
 const fs = require("fs");
 const { db_read, db_write } = require("../config/db");
@@ -10,22 +11,39 @@ const { db_read, db_write } = require("../config/db");
  * @param res
  * @returns {*}
  */
- function getAllFiles(req, res) {
+function getAllFiles(req, res) {
   try {
 
-    ModalFinalPayable.getFiles((err, response) => {
-      if (!err && response) {
+    console.log('called?');
+
+    ModalFinalPayable.find(function (err, data) {
+      console.log('data', data);
+      if (err) {
+        return res.status(401).send({
+          error: err,
+          message: "No user found.",
+        });
+      } else {
         return res.json({
           message: "success",
-          data: response,
+          data: data,
         });
       }
-      return res.status(401).send({
-        error: "Not Found",
-        message: "No user found.",
-      });
     });
-  } catch (e) {}
+
+    // ModalFinalPayable.getFiles((err, response) => {
+    //   if (!err && response) {
+    //     return res.json({
+    //       message: "success",
+    //       data: response,
+    //     });
+    //   }
+    //   return res.status(401).send({
+    //     error: "Not Found",
+    //     message: "No user found.",
+    //   });
+    // });
+  } catch (e) { }
 }
 
 /**
@@ -36,7 +54,7 @@ const { db_read, db_write } = require("../config/db");
 
 
 
-function addFinalPayable(req, res) {
+async function addFinalPayable(req, res) {
   try {
     if (!req.files) {
       res.send({
@@ -59,7 +77,7 @@ function addFinalPayable(req, res) {
       );
 
       let rows = [];
-     
+
 
       const data = {
         file: Math.floor(new Date() / 1000) + "_" + final_payable.name,
@@ -67,16 +85,21 @@ function addFinalPayable(req, res) {
         updated_at: new Date(req.body.date),
       };
 
-      db_write.query("INSERT INTO final_payable_files SET ? ", [data], function (err, res) {
-        if (err) {
-          console.log("error: ", err);
-        } else {
-          console.log("error: ", res);
-        }
-      });
-      
+
+      const files = new ModalFinalPayableFiles(data)
+      await files.save()
+
+
+      // db_write.query("INSERT INTO final_payable_files SET ? ", [data], function (err, res) {
+      //   if (err) {
+      //     console.log("error: ", err);
+      //   } else {
+      //     console.log("error: ", res);
+      //   }
+      // });
+
       let path =
-      "./uploads/" + Math.floor(new Date() / 1000) + "_" + final_payable.name;
+        "./uploads/" + Math.floor(new Date() / 1000) + "_" + final_payable.name;
 
       fs.createReadStream(path)
         .pipe(csv.parse({ headers: true }))
@@ -85,7 +108,7 @@ function addFinalPayable(req, res) {
         })
         .on("data", (row) => {
           let final_row = {
-  // id, domain, gross_revenue, deductions, net_revenue
+            // id, domain, gross_revenue, deductions, net_revenue
 
             domain: row["Domain"],
             gross_revenue: row["Gross Revenue"].split('$')[0],
@@ -98,15 +121,32 @@ function addFinalPayable(req, res) {
           rows.push(final_row);
         })
         .on("end", () => {
-          ModalFinalPayable.addFinalPayable(rows, (err, response) => {
-            if (!err && response) {
+
+
+
+          ModalFinalPayable.insertMany(rows, function (err, mongooseDocuments) { 
+            if (!err && mongooseDocuments) {
               return res.json({
-                message: "FinalPayable imported successfully!",
+                message: "Final Payablles added successfully!",
                 status: true,
+                mongooseDocuments
               });
             }
             return res.status(401).send(err);
+          
+          
           });
+
+
+          // ModalFinalPayable.addFinalPayable(rows, (err, response) => {
+          //   if (!err && response) {
+          //     return res.json({
+          //       message: "FinalPayable imported successfully!",
+          //       status: true,
+          //     });
+          //   }
+          //   return res.status(401).send(err);
+          // });
         });
     }
   } catch (err) {
@@ -116,16 +156,16 @@ function addFinalPayable(req, res) {
 
 async function getMonthlyReport(req, res) {
   try {
-    let month =req.query.month
+    let month = req.query.month
 
     let date = new Date(month);
     let firstDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
     let lastDayLastDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
 
-    await ModalFinalPayable.getMonthlyReport({month, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth}, async (err, response) => {
+    await ModalFinalPayable.getMonthlyReport({ month, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth }, async (err, response) => {
       if (!err && response) {
         console.log('res', response);
-        res.status(200).json({data: response})
+        res.status(200).json({ data: response })
       }
     })
   } catch (err) {
@@ -141,7 +181,7 @@ const verifyToken = async (token) => {
       }
       return err
     })
-    
+
   } catch (error) {
     console.log(error);
   }
@@ -150,25 +190,25 @@ const verifyToken = async (token) => {
 async function getUserMonthlyReport(req, res) {
   try {
 
-    if(!req.headers.authorization)
+    if (!req.headers.authorization)
       res.status(400).json('Token required')
     const token = req.headers.authorization.split(" ")[1];
     req.user = await verifyToken(token);
-    if(!req.user)
+    if (!req.user)
       res.status(404).json('User not found!')
     console.log('req.user', req.user);
 
 
-    let month =req.query.month
+    let month = req.query.month
 
     let date = new Date(month);
     let firstDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
     let lastDayLastDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
 
-    await ModalFinalPayable.getUserMonthlyReport({month, userId:req.user.id, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth}, async (err, response) => {
+    await ModalFinalPayable.getUserMonthlyReport({ month, userId: req.user.id, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth }, async (err, response) => {
       if (!err && response) {
         console.log('res', response);
-        res.status(200).json({data: response})
+        res.status(200).json({ data: response })
       }
     })
   } catch (err) {
@@ -182,18 +222,18 @@ function deleteFile(req, res) {
     const fileId = req.params.id;
 
     ModalFinalPayable.deleteFile(fileId, (err, response) => {
-        if (!err && response) {
-          return res.json({
-            message: "File Deleted successfully!",
-            status: true,
-          });
-        }
-        return res.status(401).send(err);
-      });
-   
+      if (!err && response) {
+        return res.json({
+          message: "File Deleted successfully!",
+          status: true,
+        });
+      }
+      return res.status(401).send(err);
+    });
+
   } catch (err) {
     res.status(500).send(err.message);
   }
 }
 
-module.exports = { addFinalPayable, getMonthlyReport,getAllFiles,deleteFile, getUserMonthlyReport };
+module.exports = { addFinalPayable, getMonthlyReport, getAllFiles, deleteFile, getUserMonthlyReport };

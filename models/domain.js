@@ -24,6 +24,7 @@ const DomainSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  // domainReports: [{ type: Schema.Types.ObjectId, ref: 'reports' }],
 });
 
 const Domain = mongoose.model("domains", DomainSchema);
