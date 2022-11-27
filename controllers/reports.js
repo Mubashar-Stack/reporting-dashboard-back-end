@@ -662,7 +662,7 @@ async function getUserHomeStatsFixed(req, res) {
 
 
 
-    let date = new Date(new Date().setUTCHours(0,0,0,0));
+    let date = new Date();
     let firstDayOfCurrentMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     let lastDayLastDayOfCurrentMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
@@ -746,7 +746,7 @@ async function getUserHomeStatsFixed(req, res) {
 
 
 
-    let today = new Date(new Date().setUTCHours(0,0,0,0));
+    let today = new Date()
 
 
 
@@ -789,8 +789,11 @@ async function getUserHomeStatsFixed(req, res) {
       )
     }
 
-    let yesterDay = new Date(new Date().setUTCHours(0,0,0,0));
+    let yesterDay = new Date()
     yesterDay.setDate(yesterDay.getDate() - 1)
+    // console.log('yesterDay', yesterDay);
+    // yesterDay.setHours(0,0,0,0)
+    // console.log('yesterDayMOD', yesterDay);
 
     yesterDay = yesterDay.getFullYear() + "-" + (yesterDay.getMonth() + 1) + "-" + yesterDay.getDate()
 
@@ -876,12 +879,12 @@ async function getUserHomeStatsFixed(req, res) {
       )
     }
 
-    let date1 = new Date(new Date().setUTCHours(0,0,0,0));
+    let date1 = new Date()
     let firstDay1 = date1.getDate() - date1.getDay() - 7;
     let lastDay1 = firstDay1 + 7;
 
-    let firstDayLastWeek = new Date(new Date(new Date().setUTCHours(0,0,0,0)).setDate(firstDay1))
-    let lastDayLastWeek = new Date(new Date(new Date().setUTCHours(0,0,0,0)).setDate(lastDay1))
+    let firstDayLastWeek = new Date(new Date().setDate(firstDay1))
+    let lastDayLastWeek = new Date(new Date().setDate(lastDay1))
 
 
 
