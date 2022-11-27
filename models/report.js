@@ -132,6 +132,18 @@ const ReportsSchema = new mongoose.Schema({
     type: Number,
     // required: true,
   },
+  Calculated_Ad_Requests: {
+    type: Number,
+    // required: true,
+  },
+  Calculated_Ad_Impressions: {
+    type: Number,
+    // required: true,
+  },
+  Calculated_Revenue: {
+    type: Number,
+    // required: true,
+  },
   eCPM: {
     type: Number,
     // required: true,

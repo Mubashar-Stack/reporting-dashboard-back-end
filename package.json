@@ -28,6 +28,7 @@
     "joi": "^14.3.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.21",
+    "moment": "^2.29.4",
     "mongoose": "^6.7.2",
     "morgan": "^1.10.0",
     "mysql2": "^1.6.4"

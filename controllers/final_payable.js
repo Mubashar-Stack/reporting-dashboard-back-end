@@ -1,5 +1,6 @@
 const ModalFinalPayable = require("../models/final_payable");
-const ModalFinalPayableFiles = require("../models/final_payable");
+const ModalFinalPayableFiles = require("../models/final_payable_files");
+const ModalDomain = require("../models/domain");
 const User = require("../models/user")
 const csv = require("fast-csv");
 const fs = require("fs");
@@ -16,7 +17,7 @@ function getAllFiles(req, res) {
 
     console.log('called?');
 
-    ModalFinalPayable.find(function (err, data) {
+    ModalFinalPayableFiles.find(function (err, data) {
       console.log('data', data);
       if (err) {
         return res.status(401).send({
@@ -175,13 +176,12 @@ async function getMonthlyReport(req, res) {
 
 const verifyToken = async (token) => {
   try {
-    return await User.findById(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub, (err, response) => {
-      if (!err && response) {
-        return response
-      }
-      return err
-    })
-
+    const user = await User.findOne({ _id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
+    if (!user) {
+      return null
+    }
+    console.log('user', user);
+    return user
   } catch (error) {
     console.log(error);
   }
@@ -198,14 +198,34 @@ async function getUserMonthlyReport(req, res) {
       res.status(404).json('User not found!')
     console.log('req.user', req.user);
 
+    const domains = await ModalDomain.find(
+      {
+        user: req.user._id,
+      }
+    ).populate('user')
+
+    console.log('domains', domains);
+
+    const reportsDomianNameArray = []
+
+    domains?.map(domain => {
+      reportsDomianNameArray.push(domain.domainname)
+    })
 
     let month = req.query.month
 
     let date = new Date(month);
     let firstDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
     let lastDayLastDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+    console.log('month', month, firstDayOfSelectedMonth, lastDayLastDayOfSelectedMonth, date);
 
-    await ModalFinalPayable.getUserMonthlyReport({ month, userId: req.user.id, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth }, async (err, response) => {
+    ModalFinalPayable.find({
+      created_at: {
+        $gte: firstDayOfSelectedMonth,
+        $lte: lastDayLastDayOfSelectedMonth,
+      },
+      domain: reportsDomianNameArray
+    }, async (err, response) => {
       if (!err && response) {
         console.log('res', response);
         res.status(200).json({ data: response })

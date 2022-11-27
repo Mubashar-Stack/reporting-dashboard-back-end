@@ -95,8 +95,8 @@ function addUser(req, res) {
       //   })
 
       const data = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
+        first_name: req.body.firstName,
+        last_name: req.body.lastName,
         photo: Math.floor(new Date() / 1000) + "_" + avatar.name,
         email: req.body.email,
         password: Hash(req.body.password, config.appSecret).toString(),
@@ -162,8 +162,8 @@ function updateUser(req, res) {
     }
     const data = {
       userId: userId,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
+      first_name: req.body.firstName,
+      last_name: req.body.lastName,
       email: req.body.email,
       card_name: req.body.card_name,
       card_number: req.body.card_number,

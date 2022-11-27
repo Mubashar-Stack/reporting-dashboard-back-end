@@ -18,6 +18,6 @@ const FinalPayableFilesSchema = new mongoose.Schema({
   },
 });
 
-const FinalPayableFiles = mongoose.model("Model", FinalPayableFilesSchema,"final_payable");
+const FinalPayableFiles = mongoose.model("final_payable_files", FinalPayableFilesSchema);
 
 module.exports = FinalPayableFiles;

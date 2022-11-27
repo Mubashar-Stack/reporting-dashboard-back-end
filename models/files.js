@@ -5,7 +5,7 @@ const FilesSchema = new mongoose.Schema({
     type: String,
     // required: true,
   },
-  commisssion: {
+  commission: {
     type: Number,
     // required: true,
   },

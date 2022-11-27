@@ -12,11 +12,7 @@ const ModalUser = require("../models/user");
  */
 function login(req, res) {
   ModalUser.findOne({ email: req.body.email }, (err, data) => {
-    if (err) {
-      res
-        .status(401)
-        .send({ error: "Unauthorized", message: "Authentication failed" });
-    } else {
+    if (!err && data) {
       const user = data;
 
       const passwordInput = Hash(
@@ -50,6 +46,10 @@ function login(req, res) {
           data: jwt.sign(sign, config.jwtSecret),
         });
       }
+    } else {
+      res
+        .status(401)
+        .send({ error: "Unauthorized", message: "Authentication failed" });
     }
   });
 }

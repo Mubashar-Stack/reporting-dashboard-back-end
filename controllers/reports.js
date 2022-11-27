@@ -2,6 +2,7 @@ const ModalReport = require("../models/report");
 const ModalFile = require("../models/files");
 const User = require("../models/user")
 const ModalDomain = require("../models/domain");
+var moment = require('moment'); 
 
 const csv = require("fast-csv");
 const fs = require("fs");
@@ -16,7 +17,7 @@ const { db_read, db_write } = require("../config/db");
 function getAllFiles(req, res) {
   try {
 
-    ModalReport.find(function (err, data) {
+    ModalFile.find(function (err, data) {
       if (!err && data) {
         return res.json({
           message: "success",
@@ -70,7 +71,6 @@ async function getHomeStats(req, res) {
           total.Calculated_Revenue += respons.Calculated_Revenue
         })
       )
-      console.log('total', total);
       responseArray = reports
     }
     return res.json({
@@ -145,7 +145,6 @@ async function getUserHomeStats(req, res) {
     if (reports) {
       await Promise.all(
         reports.map(report => {
-          console.log('report', report);
           //we can round this value if req arises i.e Math.round(report.Ad_Impressions - report.Ad_Impressions*(parseFloat(("0."+report.commission))))
           report.Calculated_Ad_Requests = report.Ad_Requests - report.Ad_Requests * (parseFloat(("0." + report.commission)))
           report.Calculated_Ad_Impressions = report.Ad_Impressions - report.Ad_Impressions * (parseFloat(("0." + report.commission)))
@@ -222,7 +221,6 @@ async function getHomeStatsFixed(req, res) {
     if (reports) {
       await Promise.all(
         reports.map(report => {
-          console.log('report', report);
           report.Calculated_Ad_Requests = report.Ad_Requests - report.Ad_Requests * (parseFloat(("0." + report.commission)))
           report.Calculated_Ad_Impressions = report.Ad_Impressions - report.Ad_Impressions * (parseFloat(("0." + report.commission)))
           report.Calculated_Revenue = report.Revenue - report.Revenue * (parseFloat(("0." + report.commission)))
@@ -323,10 +321,16 @@ async function getHomeStatsFixed(req, res) {
 
     let yesterDay = new Date()
     yesterDay.setDate(yesterDay.getDate() - 1)
+    yesterDay.setHours(0,0,0,0)
 
     yesterDay = yesterDay.getFullYear() + "-" + (yesterDay.getMonth() + 1) + "-" + yesterDay.getDate()
 
+    // console.log('reports yest', yesterDayX);
+
+    yesterDay = new Date(yesterDay);
     reports = null
+    console.log('reports yest', yesterDay);
+
     
 
     reports = await ModalReport.find(
@@ -342,6 +346,7 @@ async function getHomeStatsFixed(req, res) {
     
 
 
+    console.log('reports yest', reports, yesterDay);
 
     if (reports) {
       await Promise.all(
@@ -657,7 +662,7 @@ async function getUserHomeStatsFixed(req, res) {
 
 
 
-    let date = new Date();
+    let date = new Date(new Date().setUTCHours(0,0,0,0));
     let firstDayOfCurrentMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     let lastDayLastDayOfCurrentMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
@@ -741,7 +746,7 @@ async function getUserHomeStatsFixed(req, res) {
 
 
 
-    let today = new Date()
+    let today = new Date(new Date().setUTCHours(0,0,0,0));
 
 
 
@@ -784,7 +789,7 @@ async function getUserHomeStatsFixed(req, res) {
       )
     }
 
-    let yesterDay = new Date()
+    let yesterDay = new Date(new Date().setUTCHours(0,0,0,0));
     yesterDay.setDate(yesterDay.getDate() - 1)
 
     yesterDay = yesterDay.getFullYear() + "-" + (yesterDay.getMonth() + 1) + "-" + yesterDay.getDate()
@@ -871,12 +876,12 @@ async function getUserHomeStatsFixed(req, res) {
       )
     }
 
-    let date1 = new Date()
+    let date1 = new Date(new Date().setUTCHours(0,0,0,0));
     let firstDay1 = date1.getDate() - date1.getDay() - 7;
     let lastDay1 = firstDay1 + 7;
 
-    let firstDayLastWeek = new Date(new Date().setDate(firstDay1))
-    let lastDayLastWeek = new Date(new Date().setDate(lastDay1))
+    let firstDayLastWeek = new Date(new Date(new Date().setUTCHours(0,0,0,0)).setDate(firstDay1))
+    let lastDayLastWeek = new Date(new Date(new Date().setUTCHours(0,0,0,0)).setDate(lastDay1))
 
 
 
@@ -1079,13 +1084,23 @@ function addReport(req, res) {
 
       let rows = [];
 
+      // var ts = moment(new Date(req.body.date).split("T")).unix();
+      // var m = moment.unix(ts);
+
+      // var s = "2000-01-01";
+      // let date = new Date(req.body.date.replace(/-/g, '/'));
+      let date = new Date(req.body.date);
+      console.log('date', date);
+
 
       const data = {
         file: Math.floor(new Date() / 1000) + "_" + report.name,
         commission: req.body.commission,
-        create_at: new Date(req.body.date),
-        updated_at: new Date(req.body.date),
+        create_at: date,
+        updated_at: date,
       };
+
+      console.log('data', data);
 
       var modalfile = new ModalFile(data);
 
@@ -1122,8 +1137,8 @@ function addReport(req, res) {
             Revenue: row["Revenue (USD)"],
             eCPM: eCPM_temp,
             commission: req.body.commission,
-            create_at: new Date(req.body.date),
-            updated_at: new Date(req.body.date),
+            create_at: date,
+            updated_at: date,
           };
           rows.push(final_row);
         })

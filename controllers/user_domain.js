@@ -71,7 +71,7 @@ async function getAllUserDomains(req, res) {
   try {
     const domainId = req.params.id;
 
-    const domains = await ModalDomain.find().populate('user')
+    const domains = await ModalDomain.find({user : { $ne: null }}).populate('user')
 
     return res.json({
       message: "success",
