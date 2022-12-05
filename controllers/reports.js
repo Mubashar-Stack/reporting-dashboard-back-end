@@ -754,7 +754,7 @@ async function getUserHomeStatsFixed(req, res) {
       where: {
         create_at: {
           [Op.gte]: firstDayOfCurrentMonth,
-          [Op.lte]: firstDayOfCurrentMonth,
+          [Op.lte]: lastDayLastDayOfCurrentMonth,
         },
         Domain_name: { [Op.in]: reportsDomianNameArray }
 

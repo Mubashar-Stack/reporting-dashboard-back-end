@@ -4,6 +4,8 @@ const ModalDomain = require("../models/domain");
 const User = require("../models/user")
 const csv = require("fast-csv");
 const fs = require("fs");
+const {Op} = require('sequelize');
+
 const { db_read, db_write } = require("../config/db");
 
 /**
@@ -173,11 +175,20 @@ async function getUserMonthlyReport(req, res) {
       res.status(404).json('User not found!')
     console.log('req.user', req.user);
 
-    const domains = await ModalDomain.find(
+    // const domains = await ModalDomain.find(
+    //   {
+    //     user: req.user._id,
+    //   }
+    // ).populate('user')
+
+    const domains = await ModalDomain.findAll(
       {
-        user: req.user._id,
+        where: {
+          userId: req.user.id,
+          // ...(domain_name && { domainname: domain_name })
+        }
       }
-    ).populate('user')
+    )
 
     console.log('domains', domains);
 
@@ -194,18 +205,35 @@ async function getUserMonthlyReport(req, res) {
     let lastDayLastDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
     console.log('month', month, firstDayOfSelectedMonth, lastDayLastDayOfSelectedMonth, date);
 
-    ModalFinalPayable.find({
-      created_at: {
-        $gte: firstDayOfSelectedMonth,
-        $lte: lastDayLastDayOfSelectedMonth,
-      },
-      domain: reportsDomianNameArray
-    }, async (err, response) => {
-      if (!err && response) {
-        console.log('res', response);
-        res.status(200).json({ data: response })
+    // ModalFinalPayable.find({
+    //   created_at: {
+    //     $gte: firstDayOfSelectedMonth,
+    //     $lte: lastDayLastDayOfSelectedMonth,
+    //   },
+    //   domain: reportsDomianNameArray
+    // }, async (err, response) => {
+    //   if (!err && response) {
+    //     console.log('res', response);
+    //     res.status(200).json({ data: response })
+    //   }
+    // })
+
+    const finalPayable = await ModalFinalPayable.findAll({
+      where: {
+        created_at: {
+          [Op.gte]: firstDayOfSelectedMonth,
+          [Op.lte]: lastDayLastDayOfSelectedMonth,
+        },
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
     })
+
+    if(finalPayable){
+      res.status(200).json({ data: finalPayable })
+    }else{
+      res.send("Not Found!")
+    }
   } catch (err) {
     res.status(500).send(err.message);
   }
