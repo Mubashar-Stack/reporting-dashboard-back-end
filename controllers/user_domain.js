@@ -101,22 +101,8 @@ async function getAllUserDomains(req, res) {
 
 async function addUserDomain(req, res) {
   try {
-    // const data = {
-    //   user_id: req.body.user_id,
-    //   domain_id: req.body.domain_id,
-    // };
     const domainId = req.body.domain_id
-    // ModalUserDomain.addUserDomain(data, (err, response) => {
-    //   if (!err && response) {
-    //     return res.json({
-    //       message: "UserDomain Added successfully!",
-    //       status: true,
-    //     });
-    //   }
-    //   return res.status(401).send(err);
-    // });
-
-    const domain = await ModalDomain.findById(domainId)
+    const domain = await ModalDomain.findByPk(domainId)
     if (!domain)
       return res.status(404).send({
         error: "Not Found",
@@ -125,7 +111,7 @@ async function addUserDomain(req, res) {
 
     const user_id = req.body.user_id
 
-    const user = await ModalUser.findById(user_id)
+    const user = await ModalUser.findByPk(user_id)
 
     if (!user)
       return res.status(404).send({
@@ -133,17 +119,14 @@ async function addUserDomain(req, res) {
         message: "No User found.",
       });
 
-    console.log('user', user);
-
-    if (user.domainsOfUser.includes(domainId)) {
+    if (domain.user == user_id) {
       return res.status(409).send({
         error: "Conflict",
         message: "Domain already added",
       });
     }
-    user.domainsOfUser.push(domainId)
-    await user.save()
-    domain.user = user_id
+
+    domain.userId = user_id
     await domain.save()
 
     return res.json({
@@ -152,17 +135,6 @@ async function addUserDomain(req, res) {
       user,
       domain
     });
-
-    // ModalDomain.findByIdAndUpdate(domainId, { Owner: req.body.user_id }, function (err, data) {
-    //   if (!err && data) {
-    //     return res.json({
-    //       message: "Domain Updated successfully!",
-    //       status: true,
-    //     });
-    //   }
-    //   return res.status(401).send(err);
-    // });
-
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -209,29 +181,29 @@ async function deleteUserDomain(req, res) {
     const domainId = req.params.domain_id;
 
     console.log('userId', userId, 'domainId', domainId);
-    const domain = await ModalDomain.findById(domainId)
+    const domain = await ModalDomain.findByPk(domainId)
     if (!domain)
       return res.status(404).send({
         error: "Not Found",
         message: "No Domain found.",
       });
 
-    domain.user = null
-
-    const user = await ModalUser.findById(userId)
+    const user = await ModalUser.findByPk(userId)
 
     if (!user)
       return res.status(404).send({
         error: "Not Found",
         message: "No User found.",
       });
+    domain.userId = null
 
-      user.domainsOfUser = user.domainsOfUser.filter(item => item != domainId)
-      console.log('runing');
+
+    // user.domainsOfUser = user.domainsOfUser.filter(item => item != domainId)
+    // console.log('runing');
 
     await domain.save()
-    await user.save()
-    console.log('ran');
+    // await user.save()
+    // console.log('ran');
 
     return res.json({
       message: "Domain and user unlinked successfully!",
