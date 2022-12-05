@@ -107,37 +107,81 @@
 // module.exports = final_payable;
 
 
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema
+// const mongoose = require("mongoose");
+// const Schema = mongoose.Schema
 
-const FinalPayableSchema = new mongoose.Schema({
+// const FinalPayableSchema = new mongoose.Schema({
+//   domain: {
+//     type: String,
+//     // required: true,
+//   },
+//   gross_revenue: {
+//     type: Number,
+//     // required: true,
+//   },
+//   deductions: {
+//     type: Number,
+//     // required: true,
+//   },
+//   net_revenue: {
+//     type: Number,
+//     // required: true,
+//   },
+//   // domainsOfUser: [{ type: Schema.Types.ObjectId, ref: 'domains' }],
+//   updated_at: {
+//     type: Date,
+//     default: Date.now,
+//   },
+//   created_at: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
+
+// const FinalPayable = mongoose.model("Model", FinalPayableSchema,"final_payable");
+
+// module.exports = FinalPayable;
+
+
+
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require("../config/db")
+
+const FinalPayable = sequelize.define('final_payables', {
+
+
   domain: {
-    type: String,
-    // required: true,
+    type: DataTypes.STRING,
   },
   gross_revenue: {
-    type: Number,
-    // required: true,
+    type: DataTypes.DOUBLE,
   },
   deductions: {
-    type: Number,
-    // required: true,
+    type: DataTypes.DOUBLE,
   },
   net_revenue: {
-    type: Number,
-    // required: true,
+    type: DataTypes.DOUBLE,
   },
   // domainsOfUser: [{ type: Schema.Types.ObjectId, ref: 'domains' }],
   updated_at: {
-    type: Date,
+    type: DataTypes.DATEONLY,
     default: Date.now,
   },
   created_at: {
-    type: Date,
+    type: DataTypes.DATEONLY,
     default: Date.now,
   },
+
+}, {
+  // Other model options go here
 });
 
-const FinalPayable = mongoose.model("Model", FinalPayableSchema,"final_payable");
+// (async () => {
+//   await sequelize.sync({ force: true });
+//   // Code here
+// })();
+
+// `sequelize.define` also returns the model
+// console.log(User === sequelize.models.User); // true
 
 module.exports = FinalPayable;

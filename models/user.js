@@ -124,10 +124,10 @@ const User = sequelize.define('users', {
   // Other model options go here
 });
 
-(async () => {
-  await sequelize.sync();
-  // Code here
-})();
+// (async () => {
+//   await sequelize.sync();
+//   // Code here
+// })();
 
 // `sequelize.define` also returns the model
 // console.log(User === sequelize.models.User); // true

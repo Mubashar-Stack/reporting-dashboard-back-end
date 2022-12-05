@@ -56,9 +56,9 @@ const Domain = sequelize.define('domains', {
   // Other model options go here
 });
 
-(async () => {
-  await sequelize.sync();
-  // Code here
-})();
+// (async () => {
+//   await sequelize.sync();
+//   // Code here
+// })();
 
 module.exports = Domain;

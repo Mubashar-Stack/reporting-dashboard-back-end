@@ -121,23 +121,37 @@ async function addFinalPayable(req, res) {
           console.log('reading ', final_row, row["Gross Revenue"].split('$')[0]);
           rows.push(final_row);
         })
-        .on("end", () => {
+        .on("end", async () => {
 
-
-
-          ModalFinalPayable.insertMany(rows, function (err, mongooseDocuments) { 
-            if (!err && mongooseDocuments) {
+          try {
+            const finalPayables = await ModalFinalPayable.bulkCreate(rows);
+  
+            // , function (err, mongooseDocuments) { 
+  
+            if(!finalPayables)
+              return res.status(401).send(err);
+    
               return res.json({
                 message: "Final Payablles added successfully!",
                 status: true,
-                mongooseDocuments
+                finalPayables
               });
-            }
-            return res.status(401).send(err);
-          
-          
-          });
+            
+          } catch (error) {
+            console.log('error', error);
+          }
 
+            // if (!err && mongooseDocuments) {
+            //   return res.json({
+            //     message: "Final Payablles added successfully!",
+            //     status: true,
+            //     mongooseDocuments
+            //   });
+            // }
+            // return res.status(401).send(err);
+          
+          
+          // }
 
           // ModalFinalPayable.addFinalPayable(rows, (err, response) => {
           //   if (!err && response) {
