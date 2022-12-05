@@ -1,24 +1,27 @@
-const mongoose = require("mongoose");
 
-const FilesSchema = new mongoose.Schema({
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require("../config/db")
+
+const Files = sequelize.define('files', {
+
   file: {
-    type: String,
-    // required: true,
+    type: DataTypes.STRING,
   },
   commission: {
-    type: Number,
-    // required: true,
+    type: DataTypes.DOUBLE,
   },
   updated_at: {
-    type: Date,
+    type: DataTypes.DATEONLY,
     default: Date.now,
   },
   create_at: {
-    type: Date,
+    type: DataTypes.DATEONLY,
     default: Date.now,
-  },
+  }
+
+}, {
+  // Other model options go here
 });
 
-const File = mongoose.model("files", FilesSchema);
 
-module.exports = File;
+module.exports = Files;

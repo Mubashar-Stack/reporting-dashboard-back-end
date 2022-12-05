@@ -3,6 +3,8 @@ const ModalFile = require("../models/files");
 const User = require("../models/user")
 const ModalDomain = require("../models/domain");
 var moment = require('moment'); 
+const {Op} = require('sequelize');
+
 
 const csv = require("fast-csv");
 const fs = require("fs");
@@ -14,21 +16,21 @@ const { db_read, db_write } = require("../config/db");
  * @param res
  * @returns {*}
  */
-function getAllFiles(req, res) {
+async function getAllFiles(req, res) {
   try {
 
-    ModalFile.find(function (err, data) {
-      if (!err && data) {
-        return res.json({
-          message: "success",
-          data: data,
-        });
-      }
+    const files = await ModalFile.findAll();
+    if (!files) {
       return res.status(401).send({
         error: "Not Found",
-        message: "No user found.",
+        message: "No files found.",
       });
-    });
+    } else {
+      return res.json({
+        message: "success",
+        data: files,
+      });
+    }
   } catch (e) { }
 }
 
@@ -44,17 +46,17 @@ async function getHomeStats(req, res) {
     const { domain_name, start_date, end_date } = req.query
     let responseArray = []
     let total = { Ad_Requests: 0, Ad_Impressions: 0, Revenue: 0, Calculated_Ad_Requests: 0, Calculated_Ad_Impressions: 0, Calculated_Revenue: 0 }
-    const reports = await ModalReport.find(
-      {
 
+    const reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: start_date,
-          $lte: end_date,
+          [Op.gte]: start_date,
+          [Op.lte]: end_date,
         },
         ...(domain_name && { Domain_name: domain_name })
+
       }
-    )
-    //.find({ create_at: { $gte: '2022-10-11', $lte: '2022-10-26' } })
+    })
 
     if (reports) {
       await Promise.all(
@@ -80,13 +82,15 @@ async function getHomeStats(req, res) {
 
       },
     });
-  } catch (e) { }
+  } catch (e) {
+    console.log('error: ', e);
+  }
 }
 
 
 const verifyToken = async (token) => {
   try {
-    const user = await User.findOne({ _id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
+    const user = await User.findOne({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
     if (!user) {
       return null
     }
@@ -112,12 +116,14 @@ async function getUserHomeStats(req, res) {
 
     console.log(domain_name, start_date, end_date);
 
-    const domains = await ModalDomain.find(
+    const domains = await ModalDomain.findAll(
       {
-        user: req.user._id,
-        ...(domain_name && { domainname: domain_name })
+        where: {
+          userId: req.user.id,
+          ...(domain_name && { domainname: domain_name })
+        }
       }
-    ).populate('user')
+    )
 
     console.log('domains', domains);
 
@@ -128,13 +134,26 @@ async function getUserHomeStats(req, res) {
     })
     console.log('reportsDomianNameArray', reportsDomianNameArray);
 
-    const reports = await ModalReport.find({
-      create_at: {
-        $gte: start_date,
-        $lte: end_date,
-      },
-      Domain_name: reportsDomianNameArray
+
+    const reports = await ModalReport.findAll({
+      where: {
+        create_at: {
+          [Op.gte]: start_date,
+          [Op.lte]: end_date,
+        },
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
+      }
     })
+
+
+    // const reports = await ModalReport.find({
+    //   create_at: {
+    //     $gte: start_date,
+    //     $lte: end_date,
+    //   },
+    //   Domain_name: reportsDomianNameArray
+    // })
 
     // if (reports) {
     //   reports.map(report => {
@@ -202,16 +221,27 @@ async function getHomeStatsFixed(req, res) {
 
     console.log('firstDayOfCurrentMonth', firstDayOfCurrentMonth, 'lastDayLastDayOfCurrentMonth', lastDayLastDayOfCurrentMonth);
 
-    let reports = await ModalReport.find(
-      {
+    // let reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayOfCurrentMonth,
+    //       $lte: lastDayLastDayOfCurrentMonth,
+    //     },
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    let reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayOfCurrentMonth,
-          $lte: lastDayLastDayOfCurrentMonth,
+          [Op.gte]: firstDayOfCurrentMonth,
+          [Op.lte]: lastDayLastDayOfCurrentMonth,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
 
     // 
 
@@ -244,16 +274,27 @@ async function getHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayOfLastMonth,
+    //       $lte: lastDayLastDayOfLastMonth,
+    //     },
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayOfLastMonth,
-          $lte: lastDayLastDayOfLastMonth,
+          [Op.gte]: firstDayOfLastMonth,
+          [Op.lte]: lastDayLastDayOfLastMonth,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -289,16 +330,27 @@ async function getHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: today,
+    //       $lte: today,
+    //     },
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: today,
-          $lte: today,
+          [Op.gte]: today,
+          [Op.lte]: today,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -333,16 +385,27 @@ async function getHomeStatsFixed(req, res) {
 
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: yesterDay,
+    //       $lte: yesterDay,
+    //     },
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: yesterDay,
-          $lte: yesterDay,
+          [Op.gte]: yesterDay,
+          [Op.lte]: yesterDay,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -381,16 +444,18 @@ async function getHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    
 
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayThisWeek,
-          $lte: lastDayThisWeek,
+          [Op.gte]: firstDayThisWeek,
+          [Op.lte]: lastDayThisWeek,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -427,16 +492,17 @@ async function getHomeStatsFixed(req, res) {
 
     reports = null
 
-    reports = await ModalReport.find(
-      {
 
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayLastWeek,
-          $lte: lastDayLastWeek,
+          [Op.gte]: firstDayLastWeek,
+          [Op.lte]: lastDayLastWeek,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
 
 
 
@@ -464,16 +530,16 @@ async function getHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
-
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: currentYearFirstDay,
-          $lte: currentYearLastDay,
+          [Op.gte]: currentYearFirstDay,
+          [Op.lte]: currentYearLastDay,
         },
-        // ...(domain_name && { Domain_name: domain_name })
+        // Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
 
 
 
@@ -631,12 +697,14 @@ async function getUserHomeStatsFixed(req, res) {
     console.log('req.user.id', req.user._id);
     
 
-    const domains = await ModalDomain.find(
+    const domains = await ModalDomain.findAll(
       {
-        user: req.user._id,
-        ...(domain_name && { domainname: domain_name })
+        where: {
+          userId: req.user.id,
+          ...(domain_name && { domainname: domain_name })
+        }
       }
-    ).populate('user')
+    )
 
     console.log('domains', domains);
 
@@ -671,16 +739,28 @@ async function getUserHomeStatsFixed(req, res) {
 
     console.log('firstDayOfCurrentMonth', firstDayOfCurrentMonth, 'lastDayLastDayOfCurrentMonth', lastDayLastDayOfCurrentMonth);
 
-    let reports = await ModalReport.find(
-      {
+    // let reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayOfCurrentMonth,
+    //       $lte: lastDayLastDayOfCurrentMonth,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //   }
+    // )
+
+    let reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayOfCurrentMonth,
-          $lte: lastDayLastDayOfCurrentMonth,
+          [Op.gte]: firstDayOfCurrentMonth,
+          [Op.lte]: firstDayOfCurrentMonth,
         },
-        Domain_name: reportsDomianNameArray
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
+
 
     // 
 
@@ -714,16 +794,27 @@ async function getUserHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayOfLastMonth,
+    //       $lte: lastDayLastDayOfLastMonth,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayOfLastMonth,
-          $lte: lastDayLastDayOfLastMonth,
+          [Op.gte]: firstDayOfLastMonth,
+          [Op.lte]: lastDayLastDayOfLastMonth,
         },
-        Domain_name: reportsDomianNameArray
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -759,16 +850,27 @@ async function getUserHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: today,
+    //       $lte: today,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: today,
-          $lte: today,
+          [Op.gte]: today,
+          [Op.lte]: today,
         },
-        Domain_name: reportsDomianNameArray
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -800,18 +902,28 @@ async function getUserHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
-        create_at: {
-          $gte: yesterDay,
-          $lte: yesterDay,
-        },
-        Domain_name: reportsDomianNameArray
-        // ...(domain_name && { Domain_name: domain_name })
-      }
-    )
+    //     create_at: {
+    //       $gte: yesterDay,
+    //       $lte: yesterDay,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
     
+    reports = await ModalReport.findAll({
+      where: {
+        create_at: {
+          [Op.gte]: yesterDay,
+          [Op.lte]: yesterDay,
+        },
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
+      }
+    })
 
 
 
@@ -848,17 +960,28 @@ async function getUserHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayThisWeek,
+    //       $lte: lastDayThisWeek,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayThisWeek,
-          $lte: lastDayThisWeek,
+          [Op.gte]: firstDayThisWeek,
+          [Op.lte]: lastDayThisWeek,
         },
-        Domain_name: reportsDomianNameArray
-        // ...(domain_name && { Domain_name: domain_name })
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
     
 
 
@@ -895,18 +1018,28 @@ async function getUserHomeStatsFixed(req, res) {
 
     reports = null
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: firstDayLastWeek,
+    //       $lte: lastDayLastWeek,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: firstDayLastWeek,
-          $lte: lastDayLastWeek,
+          [Op.gte]: firstDayLastWeek,
+          [Op.lte]: lastDayLastWeek,
         },
-        Domain_name: reportsDomianNameArray
-        // ...(domain_name && { Domain_name: domain_name })
-      }
-    )
+        Domain_name: { [Op.in]: reportsDomianNameArray }
 
+      }
+    })
 
 
     if (reports) {
@@ -933,17 +1066,28 @@ async function getUserHomeStatsFixed(req, res) {
     reports = null
     
 
-    reports = await ModalReport.find(
-      {
+    // reports = await ModalReport.find(
+    //   {
 
+    //     create_at: {
+    //       $gte: currentYearFirstDay,
+    //       $lte: currentYearLastDay,
+    //     },
+    //     Domain_name: reportsDomianNameArray
+    //     // ...(domain_name && { Domain_name: domain_name })
+    //   }
+    // )
+
+    reports = await ModalReport.findAll({
+      where: {
         create_at: {
-          $gte: currentYearFirstDay,
-          $lte: currentYearLastDay,
+          [Op.gte]: currentYearFirstDay,
+          [Op.lte]: currentYearLastDay,
         },
-        Domain_name: reportsDomianNameArray
-        // ...(domain_name && { Domain_name: domain_name })
+        Domain_name: { [Op.in]: reportsDomianNameArray }
+
       }
-    )
+    })
 
 
 
@@ -1063,7 +1207,7 @@ async function getUserHomeStatsFixed(req, res) {
 }
 
 
-function addReport(req, res) {
+async function addReport(req, res) {
   try {
     if (!req.files) {
       res.send({
@@ -1107,13 +1251,7 @@ function addReport(req, res) {
 
       var modalfile = new ModalFile(data);
 
-      modalfile.save(function (err, data) {
-        if (err) {
-          console.log("error: ", err);
-        } else {
-          console.log("error: ", res);
-        }
-      });
+      await modalfile.save();
 
       let path =
         "./uploads/" + Math.floor(new Date() / 1000) + "_" + report.name;
@@ -1145,20 +1283,23 @@ function addReport(req, res) {
           };
           rows.push(final_row);
         })
-        .on("end", () => {
-          // ModalReport.addReport(rows, (err, response) => {
-          ModalReport.insertMany(rows, function (err, mongooseDocuments) {
-            if (!err && mongooseDocuments) {
-              return res.json({
-                message: "Report imported successfully!",
-                status: true,
-              });
-            }
-            return res.status(401).send(err);
+        .on("end", async () => {
 
+          try {
+            const reportInsert = await ModalReport.bulkCreate(rows);
 
-          });
-          // });
+            if (!reportInsert)
+              return res.status(401).send("err");
+
+            return res.json({
+              message: "Report imported successfully!",
+              status: true,
+              reportInsert
+            });
+
+          } catch (error) {
+            console.log('error', error);
+          }
         });
     }
   } catch (err) {
@@ -1167,20 +1308,24 @@ function addReport(req, res) {
 }
 
 
-function deleteFile(req, res) {
+async function deleteFile(req, res) {
   try {
     const fileId = req.params.id;
 
-    ModalFile.findByIdAndDelete(fileId, function (err, data) {
-      if (!err && data) {
-        return res.json({
-          message: "File Deleted successfully!",
-          status: true,
-        });
+    const deletedFile = await ModalFile.destroy({
+      where: {
+        id: fileId
       }
-      return res.status(401).send(err);
     });
 
+    if (!deletedFile) {
+      return res.status(404).send("Not Found.");
+    } else {
+      return res.json({
+        message: "File Deleted successfully!",
+        status: true,
+      });
+    }
   } catch (err) {
     res.status(500).send(err.message);
   }
