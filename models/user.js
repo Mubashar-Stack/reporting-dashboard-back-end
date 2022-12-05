@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require("../config/db")
+const Domain = require('./domain')
 
 const User = sequelize.define('users', {
 
@@ -131,5 +132,9 @@ const User = sequelize.define('users', {
 
 // `sequelize.define` also returns the model
 // console.log(User === sequelize.models.User); // true
+User.hasMany(Domain)
+Domain.belongsTo(User, {
+  foreignKey: 'userId',
+})
 
 module.exports = User;

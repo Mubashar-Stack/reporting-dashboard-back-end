@@ -1,6 +1,8 @@
 const ModalUserDomain = require("../models/users_domains");
 const ModalDomain = require("../models/domain");
 const ModalUser = require("../models/user");
+const Domain = require("../models/domain");
+const {Op} = require('sequelize');
 
 
 /**
@@ -36,29 +38,24 @@ async function getUserDomainByUserId(req, res) {
 
     console.log('not sure');
 
-    const user = await ModalUser.findById(user_id).populate('domainsOfUser')
 
-    console.log('user', user);
-    if (user)
-      return res.json({ message: "success", data: user })
-    return res.status(404).send({
-      error: "Not Found",
-      message: "No User found.",
+    const user = await ModalUser.findByPk(user_id, {
+      include: [{
+        model: Domain,
+        // as:'domainsOfUser'
+      }]
     });
-    // ModalUserDomain.getUserDomainsById(user_id, (err, response) => {
-    //   if (!err && response) {
-
-    //     return res.json({
-    //       message: "success",
-    //       data: response,
-    //     });
-    //   }
-    //   return res.status(404).send({
-    //     error: "Not Found",
-    //     message: "No UserDomain found.",
-    //   });
-    // });
-  } catch (e) { }
+    if (!user) {
+      return res.status(404).send({
+        error: "Not Found",
+        message: "No User found.",
+      });
+    } else {
+      return res.json({ message: "success", data: user })
+    }
+  } catch (e) {
+    console.log('error: ', e);
+   }
 }
 
 /**
@@ -69,28 +66,31 @@ async function getUserDomainByUserId(req, res) {
  */
 async function getAllUserDomains(req, res) {
   try {
-    const domainId = req.params.id;
 
-    const domains = await ModalDomain.find({user : { $ne: null }}).populate('user')
-
-    return res.json({
-      message: "success",
-      data: domains,
+    const domains = await ModalDomain.findAll({
+      where: {
+        userId: { [Op.ne]: null }
+      },
+      include: [{
+        model: ModalUser,
+        // as:'domainsOfUser'
+      }]
     });
+    if (!domains) {
+      return res.status(404).send({
+        error: "Not Found",
+        message: "No domain found.",
+      });
+    } else {
+      return res.json({
+        message: "success",
+        data: domains,
+      });
+    }
 
-    // ModalUserDomain.getUserDomains((err, response) => {
-    //   if (!err && response) {
-    //     return res.json({
-    //       message: "success",
-    //       data: response,
-    //     });
-    //   }
-    //   return res.status(401).send({
-    //     error: "Not Found",
-    //     message: "No domain found.",
-    //   });
-    // });
-  } catch (e) { }
+  } catch (e) {
+    console.log("error: ", e);
+  }
 }
 
 /**

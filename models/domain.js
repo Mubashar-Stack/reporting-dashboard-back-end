@@ -9,6 +9,9 @@ const Domain = sequelize.define('domains', {
     type: DataTypes.STRING,
   },
   // user: { type: Schema.Types.ObjectId, ref: 'users' },
+  userId: {
+    type: DataTypes.INTEGER
+  },
   created_at: {
     type: DataTypes.DATE,
     default: Date.now,

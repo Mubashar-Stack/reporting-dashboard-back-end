@@ -12,38 +12,22 @@ const { db_read, db_write } = require("../config/db");
  * @param res
  * @returns {*}
  */
-function getAllFiles(req, res) {
+async function getAllFiles(req, res) {
   try {
 
-    console.log('called?');
 
-    ModalFinalPayableFiles.find(function (err, data) {
-      console.log('data', data);
-      if (err) {
-        return res.status(401).send({
-          error: err,
-          message: "No user found.",
-        });
-      } else {
-        return res.json({
-          message: "success",
-          data: data,
-        });
-      }
-    });
-
-    // ModalFinalPayable.getFiles((err, response) => {
-    //   if (!err && response) {
-    //     return res.json({
-    //       message: "success",
-    //       data: response,
-    //     });
-    //   }
-    //   return res.status(401).send({
-    //     error: "Not Found",
-    //     message: "No user found.",
-    //   });
-    // });
+    const files = await ModalFinalPayableFiles.findAll();
+    if (!files) {
+      return res.status(401).send({
+        error: err,
+        message: "No file found.",
+      });
+    } else {
+      return res.json({
+        message: "success",
+        data: files,
+      });
+    }
   } catch (e) { }
 }
 
@@ -228,21 +212,25 @@ async function getUserMonthlyReport(req, res) {
 }
 
 
-function deleteFile(req, res) {
+async function deleteFile(req, res) {
   try {
     const fileId = req.params.id;
 
 
-    
-    const deletedFile = ModalFinalPayableFiles.findByIdAndDelete(fileId, function (err, data) {
-      if (!err && data) {
-        return res.json({
-          message: "File Deleted successfully!",
-          status: true,
-        });
+    const deletedFiles = await ModalFinalPayableFiles.destroy({
+      where: {
+        id: fileId
       }
-      return res.status(401).send(err);
     });
+
+    if (!deletedFiles) {
+      return res.status(404).send("Not Found.");
+    } else {
+      return res.json({
+        message: "File Deleted successfully!",
+        status: true,
+      });
+    }
 
   } catch (err) {
     res.status(500).send(err.message);
