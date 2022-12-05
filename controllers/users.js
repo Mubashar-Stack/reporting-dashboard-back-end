@@ -8,23 +8,23 @@ const config = require("../config/app");
  * @param res
  * @returns {*}
  */
-function getUserById(req, res) {
+async function getUserById(req, res) {
   try {
     const userId = req.params.id;
 
-    ModalUser.findOne({ _id: userId }, (err, data) => {
-      if (err) {
-        return res.status(401).send({
-          error: err,
-          message: "No user found.",
-        });
-      } else {
-        return res.json({
-          message: "success",
-          data: data,
-        });
-      }
-    });
+    const user = await ModalUser.findByPk(userId);
+    if (user === null) {
+      return res.status(401).send({
+        error: err,
+        message: "No user found.",
+      });
+    } else {
+      return res.json({
+        message: "success",
+        data: user,
+      });
+    }
+
   } catch (e) { }
 }
 
