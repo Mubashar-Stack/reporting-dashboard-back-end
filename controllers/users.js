@@ -25,7 +25,7 @@ function getUserById(req, res) {
         });
       }
     });
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /**
@@ -34,24 +34,27 @@ function getUserById(req, res) {
  * @param res
  * @returns {*}
  */
-function getAllUsers(req, res) {
+async function getAllUsers(req, res) {
   try {
     const userId = req.params.id;
+    console.log('receive hit');
 
-    ModalUser.find(function (err, data) {
-      if (err) {
-        return res.status(401).send({
-          error: err,
-          message: "No user found.",
-        });
-      } else {
-        return res.json({
-          message: "success",
-          data: data,
-        });
-      }
-    });
-  } catch (e) {}
+    const users = await ModalUser.findAll();
+    // console.log('users', users);
+    if (!users) {
+      return res.status(401).send({
+        error: err,
+        message: "No user found.",
+      });
+    } else {
+      return res.json({
+        message: "success",
+        data: users,
+      });
+    }
+  } catch (e) {
+    console.log('err', e);
+  }
 }
 
 /**
@@ -94,16 +97,17 @@ async function addUser(req, res) {
 
     var modalUser = new ModalUser(data);
 
-    modalUser.save(function (err, data) {
-      if (err) {
-        return res.status(401).send(err);
-      } else {
-        return res.json({
-          message: "User Added successfully!",
-          status: true,
-        });
-      }
-    });
+    await modalUser.save();
+    // function (err, data) {
+    if (!modalUser) {
+      return res.status(401).send("err");
+    } else {
+      return res.json({
+        message: "User Added successfully!",
+        status: true,
+      });
+    }
+    // }
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -115,7 +119,7 @@ async function addUser(req, res) {
  * @returns {*}
  */
 
-function updateUser(req, res) {
+async function updateUser(req, res) {
   try {
     const userId = req.params.id;
     // if (req.body.isFileChange !== 'false' ) {
@@ -137,7 +141,7 @@ function updateUser(req, res) {
       );
     }
     const data = {
-      userId: userId,
+      // userId: userId,
       first_name: req.body.firstName,
       last_name: req.body.lastName,
       email: req.body.email,
@@ -172,18 +176,20 @@ function updateUser(req, res) {
 
     console.log(data, "data");
 
-    ModalUser.findByIdAndUpdate(userId, data, function (err, data) {
-      if (err) {
-        console.log(err);
-        return res.status(401).send(err);
-      } else {
-        return res.json({
-          message: "User Updated successfully!",
-          status: true,
-          data: data,
-        });
+    const udatedUser = await ModalUser.update(data, {
+      where: {
+        id: userId
       }
     });
+
+    if (!udatedUser) {
+      return res.status(404).send("Not Found.");
+    } else {
+      return res.json({
+        message: "User updated successfully!",
+        status: true,
+      });
+    }
 
     // }
   } catch (err) {
@@ -191,22 +197,25 @@ function updateUser(req, res) {
   }
 }
 
-function deleteUser(req, res) {
+async function deleteUser(req, res) {
   try {
     const userId = req.params.id;
 
-    ModalUser.findByIdAndDelete(userId, function (err, data) {
-      if (err) {
-        console.log(err);
-        return res.status(401).send(err);
-      } else {
-        return res.json({
-          message: "User Deleted successfully!",
-          status: true,
-          data: data,
-        });
+    const deletedUser = await ModalUser.destroy({
+      where: {
+        id: userId
       }
     });
+
+    if (!deletedUser) {
+      return res.status(404).send("Not Found.");
+    } else {
+      return res.json({
+        message: "User Deleted successfully!",
+        status: true,
+        // data: deletedUser,
+      });
+    }
   } catch (err) {
     res.status(500).send(err.message);
   }

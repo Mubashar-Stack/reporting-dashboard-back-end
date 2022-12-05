@@ -31,7 +31,8 @@
     "moment": "^2.29.4",
     "mongoose": "^6.7.2",
     "morgan": "^1.10.0",
-    "mysql2": "^1.6.4"
+    "mysql2": "^1.6.4",
+    "sequelize": "^6.26.0"
   },
   "devDependencies": {
     "mocha": "^5.2.0",

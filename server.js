@@ -24,7 +24,7 @@ app.use(fileUpload({
 
 // add cors headers
 app.use(cors());
-connectDB();
+// connectDB();
 // comporess output
 app.use(compression());
 
