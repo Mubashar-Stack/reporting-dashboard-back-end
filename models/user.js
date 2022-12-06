@@ -14,7 +14,7 @@ const User = sequelize.define('users', {
   },
   type: {
     type: DataTypes.STRING,
-
+    defaultValue:'user',
     // required: true,
   },
   photo: {
@@ -28,12 +28,12 @@ const User = sequelize.define('users', {
   },
   enabled: {
     type: DataTypes.STRING,
-
+    defaultValue: '1',
     // required: true,
   },
   password: {
     type: DataTypes.STRING,
-
+    
     // required: true,
   },
   card_name: {
@@ -53,6 +53,7 @@ const User = sequelize.define('users', {
   },
   expiry_date: {
     type: DataTypes.DATEONLY,
+    allowNull: true
 
     // required: true,
   },

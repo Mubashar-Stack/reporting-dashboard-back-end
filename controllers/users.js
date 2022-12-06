@@ -83,7 +83,7 @@ async function addUser(req, res) {
       card_name: req.body.card_name,
       card_number: req.body.card_number,
       cvc: req.body.cvc,
-      expiry_date: new Date(req.body.expiry_date),
+      //expiry_date: req.body.expiry_date ?new Date(req.body.expiry_date):'',
       banck_name: req.body.banck_name,
       bank_address: req.body.bank_address,
       bank_ac_holder_name: req.body.bank_ac_holder_name,
@@ -94,6 +94,10 @@ async function addUser(req, res) {
       paypal_email_address: req.body.paypal_email_address,
       upi: req.body.upi,
     };
+    
+    if(req.body.expiry_date){
+     data["expiry_date"] = req.body.expiry_date;
+    }
 
     var modalUser = new ModalUser(data);
 
@@ -148,7 +152,7 @@ async function updateUser(req, res) {
       card_name: req.body.card_name,
       card_number: req.body.card_number,
       cvc: req.body.cvc,
-      expiry_date: new Date(req.body.expiry_date),
+      //expiry_date: new Date(req.body.expiry_date),
       banck_name: req.body.banck_name,
       bank_address: req.body.bank_address,
       bank_ac_holder_name: req.body.bank_ac_holder_name,
@@ -175,6 +179,10 @@ async function updateUser(req, res) {
     }
 
     console.log(data, "data");
+    if(req.body.expiry_date){
+     data["expiry_date"] = req.body.expiry_date;
+    }
+
 
     const udatedUser = await ModalUser.update(data, {
       where: {
