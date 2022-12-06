@@ -26,7 +26,7 @@ const authorizeAdmin = async (req, res, next) => {
         const token = authorization.replace('Bearer ','').replace('bearer ','');
         try {
             const decoded = jwt.verify(token, config.jwtSecret);
-            const user = await User.findOne({ _id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
+            const user = await User.findByPk({ _id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
 
             if(decoded && user.type== "admin"){
                 console.log('decoded', decoded);

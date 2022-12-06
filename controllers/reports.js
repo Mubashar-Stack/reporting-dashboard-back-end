@@ -90,11 +90,12 @@ async function getHomeStats(req, res) {
 
 const verifyToken = async (token) => {
   try {
-    const user = await User.findOne({ id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
+    console.log('strange token', token);
+    const user = await User.findByPk(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub);
     if (!user) {
       return null
     }
-    console.log('user', user);
+    console.log('okdoke', JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub, user.id);
     return user
   } catch (error) {
     console.log(error);
@@ -125,7 +126,7 @@ async function getUserHomeStats(req, res) {
       }
     )
 
-    console.log('domains', domains);
+    console.log('domains', domains, "req.user.....", req.user.id);
 
     const reportsDomianNameArray = []
 
@@ -176,7 +177,6 @@ async function getUserHomeStats(req, res) {
           total.Calculated_Revenue += report.Calculated_Revenue
         })
       )
-      console.log('total', total);
       responseArray = reports
     }
 
@@ -219,7 +219,6 @@ async function getHomeStatsFixed(req, res) {
     firstDayOfCurrentMonth = firstDayOfCurrentMonth.getFullYear() + "-" + (firstDayOfCurrentMonth.getMonth() + 1) + "-" + firstDayOfCurrentMonth.getDate()
     lastDayLastDayOfCurrentMonth = lastDayLastDayOfCurrentMonth.getFullYear() + "-" + (lastDayLastDayOfCurrentMonth.getMonth() + 1) + "-" + lastDayLastDayOfCurrentMonth.getDate()
 
-    console.log('firstDayOfCurrentMonth', firstDayOfCurrentMonth, 'lastDayLastDayOfCurrentMonth', lastDayLastDayOfCurrentMonth);
 
     // let reports = await ModalReport.find(
     //   {
@@ -381,7 +380,6 @@ async function getHomeStatsFixed(req, res) {
 
     yesterDay = new Date(yesterDay);
     reports = null
-    console.log('reports yest', yesterDay);
 
     
 
@@ -409,7 +407,6 @@ async function getHomeStatsFixed(req, res) {
     
 
 
-    console.log('reports yest', reports, yesterDay);
 
     if (reports) {
       await Promise.all(
@@ -694,7 +691,7 @@ async function getUserHomeStatsFixed(req, res) {
     // userId: req.user.id
 
 
-    console.log('req.user.id', req.user._id);
+    console.log('req.user.id', req.user.id);
     
 
     const domains = await ModalDomain.findAll(
@@ -737,7 +734,6 @@ async function getUserHomeStatsFixed(req, res) {
     firstDayOfCurrentMonth = firstDayOfCurrentMonth.getFullYear() + "-" + (firstDayOfCurrentMonth.getMonth() + 1) + "-" + firstDayOfCurrentMonth.getDate()
     lastDayLastDayOfCurrentMonth = lastDayLastDayOfCurrentMonth.getFullYear() + "-" + (lastDayLastDayOfCurrentMonth.getMonth() + 1) + "-" + lastDayLastDayOfCurrentMonth.getDate()
 
-    console.log('firstDayOfCurrentMonth', firstDayOfCurrentMonth, 'lastDayLastDayOfCurrentMonth', lastDayLastDayOfCurrentMonth);
 
     // let reports = await ModalReport.find(
     //   {
@@ -770,7 +766,6 @@ async function getUserHomeStatsFixed(req, res) {
     if (reports) {
       await Promise.all(
         reports.map(report => {
-          console.log('report', report);
           report.Calculated_Ad_Requests = report.Ad_Requests - report.Ad_Requests * (parseFloat(("0." + report.commission)))
           report.Calculated_Ad_Impressions = report.Ad_Impressions - report.Ad_Impressions * (parseFloat(("0." + report.commission)))
           report.Calculated_Revenue = report.Revenue - report.Revenue * (parseFloat(("0." + report.commission)))
@@ -1196,7 +1191,7 @@ async function getUserHomeStatsFixed(req, res) {
       )
     }
 
-    console.log('monthwiseData', monthwiseData);
+    // console.log('monthwiseData', monthwiseData);
 
     return res.json({
       message: "success",

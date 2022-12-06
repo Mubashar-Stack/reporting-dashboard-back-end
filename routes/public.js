@@ -41,10 +41,10 @@ router.route("/reports/new").post(authorize.authorize, reports.addReport);
 router.route("/reports/all").get(authorize.authorize, reports.getAllFiles);
 router.route("/reports/delete/:id").delete(authorize.authorize, reports.deleteFile);
 
-router.route("/homeStats").get(authorize.authorize, reports.getHomeStats);
-router.route("/userHomeStats").get(authorize.authorize, reports.getUserHomeStats);
-router.route("/homeStatsFixed").get(authorize.authorize, reports.getHomeStatsFixed);
-router.route("/userHomeStatsFixed").get(authorize.authorize, reports.getUserHomeStatsFixed);
+router.route("/homeStats").get( reports.getHomeStats);
+router.route("/userHomeStats").get( reports.getUserHomeStats);
+router.route("/homeStatsFixed").get( reports.getHomeStatsFixed);
+router.route("/userHomeStatsFixed").get( reports.getUserHomeStatsFixed);
 
 
 router.route("/final-payable/new").post(authorize.authorize, final_payable.addFinalPayable);
