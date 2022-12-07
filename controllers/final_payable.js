@@ -140,12 +140,25 @@ async function getMonthlyReport(req, res) {
     let firstDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
     let lastDayLastDayOfSelectedMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
 
-    await ModalFinalPayable.getMonthlyReport({ month, start: firstDayOfSelectedMonth, end: lastDayLastDayOfSelectedMonth }, async (err, response) => {
-      if (!err && response) {
-        console.log('res', response);
-        res.status(200).json({ data: response })
+
+    const finalPayable = await ModalFinalPayable.findAll({
+      where: {
+        created_at: {
+          [Op.gte]: firstDayOfSelectedMonth,
+          [Op.lte]: lastDayLastDayOfSelectedMonth,
+        },
+        // domain: { [Op.in]: reportsDomianNameArray }
+
       }
     })
+
+    if (finalPayable) {
+      console.log('res', finalPayable);
+      res.status(200).json({ data: finalPayable })
+    } else {
+      res.send("Not Found!")
+    }
+
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -153,7 +166,7 @@ async function getMonthlyReport(req, res) {
 
 const verifyToken = async (token) => {
   try {
-    const user = await User.findOne({ _id: JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub });
+    const user = await User.findByPk(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).sub);
     if (!user) {
       return null
     }
@@ -224,7 +237,7 @@ async function getUserMonthlyReport(req, res) {
           [Op.gte]: firstDayOfSelectedMonth,
           [Op.lte]: lastDayLastDayOfSelectedMonth,
         },
-        // Domain_name: { [Op.in]: reportsDomianNameArray }
+        domain: { [Op.in]: reportsDomianNameArray }
 
       }
     })
