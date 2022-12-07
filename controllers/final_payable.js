@@ -91,7 +91,7 @@ async function addFinalPayable(req, res) {
       fs.createReadStream(path)
         .pipe(csv.parse({ headers: true }))
         .on("error", (error) => {
-          throw error.message;
+          throw error;
         })
         .on("data", (row) => {
           let final_row = {
